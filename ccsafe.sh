@@ -28,6 +28,17 @@
 CCSAFE_IMAGE="ccsafe:latest"
 CCSAFE_DIR="$HOME/.ccsafe"
 
+# ── Detect CPU architecture ────────────────────────────────────────────────────
+_ccsafe_arch() {
+    local arch
+    arch="$(uname -m)"
+    case "$arch" in
+        arm64|aarch64) echo "linux/arm64" ;;
+        x86_64)        echo "linux/amd64" ;;
+        *)             echo "linux/$arch" ;;
+    esac
+}
+
 # ── Defaults (override in your shell RC via env vars) ─────────────────────────
 CCSAFE_MEMORY="${CCSAFE_MEMORY:-2g}"
 CCSAFE_CPUS="${CCSAFE_CPUS:-4}"
@@ -40,7 +51,7 @@ _ccsafe_build() {
         return 1
     fi
     docker build \
-        --platform linux/arm64 \
+        --platform "$(_ccsafe_arch)" \
         -t "$CCSAFE_IMAGE" \
         "$CCSAFE_DIR"
     local exit_code=$?
@@ -137,6 +148,9 @@ ccsafe() {
     if [ -d "$HOME/.local/bin" ]; then
         extra_mounts+=(--volume "$HOME/.local/bin:/home/claude/.local/bin:ro")
     fi
+    if [ -f "$HOME/.claude.json" ]; then
+        extra_mounts+=(--volume "$HOME/.claude.json:/home/claude/.claude.json:rw")
+    fi
 
     # ── Extract auth from macOS Keychain ────────────────────────────────────
     local auth_env=()
@@ -176,10 +190,9 @@ ccsafe() {
         --rm \
         --interactive \
         --tty \
-        --platform linux/arm64 \
+        --platform "$(_ccsafe_arch)" \
         --volume "$target_dir:/workspace:rw" \
         --volume "$HOME/.claude:/home/claude/.claude:rw" \
-        --volume "$HOME/.claude.json:/home/claude/.claude.json:rw" \
         "${extra_mounts[@]}" \
         --workdir /workspace \
         "${auth_env[@]}" \

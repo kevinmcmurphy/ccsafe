@@ -2,6 +2,22 @@
 # install.sh — Install ccsafe to ~/.ccsafe and wire up your shell
 set -e
 
+# ── macOS only ─────────────────────────────────────────────────────────────────
+if [ "$(uname)" != "Darwin" ]; then
+    echo "❌ ccsafe currently requires macOS."
+    echo "   Linux and Windows support is planned — see the README."
+    exit 1
+fi
+
+# ── Detect CPU architecture ────────────────────────────────────────────────────
+_arch() {
+    case "$(uname -m)" in
+        arm64|aarch64) echo "linux/arm64" ;;
+        x86_64)        echo "linux/amd64" ;;
+        *)             echo "linux/$(uname -m)" ;;
+    esac
+}
+
 INSTALL_DIR="$HOME/.ccsafe"
 SHELL_RC=""
 
@@ -41,7 +57,7 @@ fi
 echo ""
 echo "🔨 Building Docker image (this takes ~2-3 min, once only)..."
 docker build \
-    --platform linux/arm64 \
+    --platform "$(_arch)" \
     -t ccsafe:latest \
     "$INSTALL_DIR"
 
