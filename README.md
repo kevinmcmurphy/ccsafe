@@ -1,5 +1,14 @@
 # ccsafe
 
+> [!NOTE]
+> **Largely superseded by Claude Code's native sandboxing.** As of early 2026, Claude Code ships with [built-in OS-level sandboxing](https://code.claude.com/docs/en/sandboxing) (Seatbelt on macOS, bubblewrap on Linux) that provides both filesystem **and network** isolation — the latter being something ccsafe never had. For most users, running `/sandbox` inside Claude Code is the better option.
+>
+> **Where ccsafe still has value:**
+> - **One-command CLI launcher** — `ccsafe .` gives you a sandboxed Claude Code session without configuring anything
+> - **Resource limits** — native sandboxing doesn't cap CPU/memory; Docker does
+> - **Harder isolation boundary** — Docker containers provide stronger process/IPC isolation than OS sandbox profiles
+> - **Defense-in-depth** — you can run ccsafe *with* native sandboxing enabled for belt-and-suspenders security
+
 > **macOS only** — Linux and Windows support is planned. See [TODO](#todo).
 
 Launch Claude Code with `--dangerously-skip-permissions` inside a Docker sandbox, so the blast radius is limited to the directory you activate it from.
@@ -11,7 +20,7 @@ Launch Claude Code with `--dangerously-skip-permissions` inside a Docker sandbox
 - Mounts `~/.claude` read-write so your config, settings, and skills come through
 - Drops all Linux capabilities, no privilege escalation
 - 2GB RAM / 4 CPUs by default — tunable per-session or globally via env vars
-- Outbound network permitted (Claude Code needs `api.anthropic.com`)
+- Outbound network permitted (Claude Code needs `api.anthropic.com`) — **note: ccsafe does not restrict outbound network access; for network isolation, use [native sandboxing](https://code.claude.com/docs/en/sandboxing) instead**
 
 ## Prerequisites
 
